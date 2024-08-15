@@ -1,6 +1,5 @@
 #include "rgbd_sensor/rgbd_sensor.h"
-#include <spdlog/fmt/ostr.h>
-#include <drake/common/text_logging.h>
+#include "drake/common/text_logging.h"
 
 namespace rs2_lcm {
 
@@ -39,7 +38,7 @@ void RGBDSensor::Start(const std::vector<ImageType>& types) {
 
   // Initialize the images and cloud to nullptrs.
   {
-    std::map<const ImageType, TimeStampedImage> images;
+    std::map<ImageType, TimeStampedImage> images;
     for (const auto& type : types) images[type] = TimeStampedImage();
 
     std::unique_lock<std::mutex> lock(data_lock_);
@@ -55,14 +54,6 @@ void RGBDSensor::Start(const std::vector<ImageType>& types) {
     if (!has_intrinsics(type)) {
       throw std::runtime_error("Missing intrinsics for: " +
                                ImageTypeToString(type));
-    }
-    drake::log()->info("{} enabled with intrinsics: {}",
-                       ImageTypeToString(type), get_intrinsics(type));
-
-    for (const auto& to_type : enabled_types) {
-      drake::log()->info("{} to {} with extrinsics:\n{}",
-                         ImageTypeToString(type), ImageTypeToString(to_type),
-                         get_extrinsics(type, to_type).matrix());
     }
   }
 }

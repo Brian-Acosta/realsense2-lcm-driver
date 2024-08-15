@@ -26,7 +26,6 @@ cc_library(
     ],
     deps = [
         ":intrinsics",
-        "@boost//:boost_headers",
         "@drake//common:essential",
         "@opencv",
     ],
@@ -46,8 +45,8 @@ cc_library(
         ":rgbd_sensor",
         "//lcmtypes:lcmtypes_rs2_cc",
         "@drake//common:essential",
-        "@lcm",
         "@drake//lcmtypes:image_array",
+        "@lcm",
         "@zlib",
     ],
 )
@@ -92,8 +91,6 @@ cc_binary(
     deps = [
         ":lcm_related",
         ":real_sense_d400",
-        "@boost//:boost_headers",
-        "@boost//:boost_system",
         "@drake//common:essential",
         "@gflags",
     ],

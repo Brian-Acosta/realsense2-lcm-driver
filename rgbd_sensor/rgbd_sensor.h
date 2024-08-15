@@ -155,7 +155,7 @@ class RGBDSensor {
   std::map<std::pair<ImageType, ImageType>, Eigen::Isometry3f> extrinsics_;
 
   mutable std::mutex data_lock_;
-  std::map<const ImageType, TimeStampedImage> images_;
+  std::map<ImageType, TimeStampedImage> images_;
 };
 
 /**

@@ -2,8 +2,9 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include <string>
 
-#include <boost/make_shared.hpp>
 #include <drake/common/scoped_singleton.h>
 #include <librealsense2/rs_advanced_mode.hpp>
 #include <librealsense2/rsutil.h>

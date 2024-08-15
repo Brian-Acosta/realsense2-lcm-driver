@@ -174,7 +174,7 @@ void LcmRgbdPublisher::PublishImages() {
       case ImageType::DEPTH_ALIGNED_RGB: {
         cv::Mat rgb_mat = img->MakeCvImage(CV_8UC3);
         cv::Mat bgr_mat;
-        cv::cvtColor(rgb_mat, bgr_mat, CV_RGB2BGR);
+        cv::cvtColor(rgb_mat, bgr_mat, cv::COLOR_RGB2BGR);
         build_lcm_image_message(
             bgr_mat, CV_8UC3, false, drake::lcmt_image::PIXEL_FORMAT_RGB,
             drake::lcmt_image::CHANNEL_TYPE_UINT8,
