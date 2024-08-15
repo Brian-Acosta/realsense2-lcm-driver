@@ -18,13 +18,21 @@ void SingleRSInterface::Start() {
 
 void SingleRSInterface::Stop() {
   run_ = false;
+
   if (poll_thread_.joinable()) {
     poll_thread_.join();
   }
+
   if (pc_thread_.joinable()) {
     pc_thread_.join();
   }
-  pipeline_.stop();
+
+  try {
+    pipeline_.stop();
+  } catch (rs2::wrong_api_call_sequence_error& e) {
+    // make stop() essentially a no-op if pipeline is stopped
+  }
+
 }
 
 void SingleRSInterface::poll() {
@@ -47,7 +55,9 @@ void SingleRSInterface::process_pc() {
 
   while (run_) {
     std::unique_lock<std::mutex> frame_lock(frameset_mutex_);
-    has_new_frame_cond_var_.wait(frame_lock, [this]{return not latest_depth_.empty();});
+    has_new_frame_cond_var_.wait(
+        frame_lock, [this] {return not latest_depth_.empty();}
+    );
 
     depth = latest_depth_.front();
     latest_depth_.pop();
@@ -58,9 +68,7 @@ void SingleRSInterface::process_pc() {
     std::unique_lock<std::mutex> pc_lock(points_mutex_);
     latest_pc_ = pc.calculate(depth);
     pc_lock.unlock();
-
   }
-
 }
 
 
