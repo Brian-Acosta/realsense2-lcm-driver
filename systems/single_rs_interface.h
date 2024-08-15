@@ -8,35 +8,45 @@
 #include "librealsense2/rs.hpp"
 
 namespace rs2_systems {
+
+struct CassieRSFrames {
+  rs2::frame color;
+  rs2::frame color_aligned_depth;
+  rs2::frame decimated_depth;
+};
+
 class SingleRSInterface {
  public:
   SingleRSInterface();
   ~SingleRSInterface();
 
+  using HandlerFunction = std::function<void(const CassieRSFrames&)>;
+
   void Start();
   void Stop();
 
+  void Subscribe(HandlerFunction handler_function) {
+    if (run_) {
+      throw std::logic_error(
+          "Cannot subscribe to the realsense while it's running");
+    }
+    callbacks.push_back(std::move(handler_function));
+  }
+
+  std::vector<HandlerFunction> callbacks{};
+
  private:
+
+  unsigned int frame_counter_{0};
 
   bool run_{false};
 
   void poll();
-  void process_pc();
 
   rs2::pipeline pipeline_{};
   rs2::config config_{};
   rs2::align frame_aligner_{RS2_STREAM_COLOR};
 
-  std::queue<rs2::frameset> latest_aligned_frames_{};
-  std::queue<rs2::frame> latest_depth_{};
-  rs2::points latest_pc_{};
-
-  std::mutex points_mutex_;
-  std::mutex frameset_mutex_;
-
   std::thread poll_thread_;
-  std::thread pc_thread_;
-
-  std::condition_variable has_new_frame_cond_var_;
 };
 }

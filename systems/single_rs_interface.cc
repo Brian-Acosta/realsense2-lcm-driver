@@ -13,7 +13,6 @@ void SingleRSInterface::Start() {
   run_ = true;
   pipeline_.start(config_);
   poll_thread_ = std::thread(&SingleRSInterface::poll, this);
-  pc_thread_ = std::thread(&SingleRSInterface::process_pc, this);
 }
 
 void SingleRSInterface::Stop() {
@@ -21,10 +20,6 @@ void SingleRSInterface::Stop() {
 
   if (poll_thread_.joinable()) {
     poll_thread_.join();
-  }
-
-  if (pc_thread_.joinable()) {
-    pc_thread_.join();
   }
 
   try {
@@ -36,41 +31,23 @@ void SingleRSInterface::Stop() {
 }
 
 void SingleRSInterface::poll() {
-  rs2::frameset frames;
-
-  while (run_) {
-    std::scoped_lock<std::mutex> lock(frameset_mutex_);
-    frames = pipeline_.wait_for_frames();
-    latest_depth_.push(frames.get_depth_frame());
-    latest_aligned_frames_.push(frame_aligner_.process(frames));
-    has_new_frame_cond_var_.notify_all();
-  }
-}
-
-void SingleRSInterface::process_pc() {
+  rs2::frameset frameset;
+  rs2::frameset aligned;
   rs2::decimation_filter decimation;
-  rs2::frame depth;
-  rs2::pointcloud pc;
   decimation.set_option(RS2_OPTION_FILTER_MAGNITUDE, 4.0f);
 
+  CassieRSFrames frames;
   while (run_) {
-    std::unique_lock<std::mutex> frame_lock(frameset_mutex_);
-    has_new_frame_cond_var_.wait(
-        frame_lock, [this] {return not latest_depth_.empty();}
-    );
-
-    depth = latest_depth_.front();
-    latest_depth_.pop();
-
-    frame_lock.unlock();
-
-    depth = decimation.process(depth);
-    std::unique_lock<std::mutex> pc_lock(points_mutex_);
-    latest_pc_ = pc.calculate(depth);
-    pc_lock.unlock();
+    frameset = pipeline_.wait_for_frames();
+    frames.color = frameset.get_color_frame();
+    aligned = frame_aligner_.process(frameset);
+    frames.color_aligned_depth = aligned.get_depth_frame();
+    frames.decimated_depth = decimation.process(frameset.get_depth_frame());
+    for (const auto& callback : callbacks) {
+      callback(frames);
+    }
   }
 }
-
 
 SingleRSInterface::~SingleRSInterface() {
  this->Stop();

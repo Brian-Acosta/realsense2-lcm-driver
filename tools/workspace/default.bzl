@@ -27,12 +27,13 @@ def add_default_repositories(excludes = [], os = [], mirrors = DEFAULT_MIRRORS):
         "godotengine",  # TODO(jeremy-nimmer) Push our patches back into Drake.
         "snopt",
     ])
-    if "boost" not in excludes:
-        boost_repository(name = "boost")
-    if "libjpeg" not in excludes:
-        libjpeg_repository(name = "libjpeg")
-    if "libtiff" not in excludes:
-        libtiff_repository(name = "libtiff")
+
+    #    if "boost" not in excludes:
+    #        boost_repository(name = "boost")
+    ##    if "libjpeg" not in excludes:
+    ##        libjpeg_repository(name = "libjpeg")
+    ##    if "libtiff" not in excludes:
+    ##        libtiff_repository(name = "libtiff")
     if "opencv" not in excludes and "macos" not in os:
         opencv_repository(name = "opencv", mirrors = mirrors)
     if "opencv" not in excludes and "macos" in os:
@@ -41,5 +42,6 @@ def add_default_repositories(excludes = [], os = [], mirrors = DEFAULT_MIRRORS):
         realsense2_repository(name = "realsense2")
     if "realsense2" not in excludes and "macos" in os:
         realsense2_pkgconfig_repository(name = "realsense2")
-    if "tbb" not in excludes:
-        tbb_repository(name = "tbb")
+
+#    if "tbb" not in excludes:
+#        tbb_repository(name = "tbb")
